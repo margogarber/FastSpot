@@ -1,0 +1,26 @@
+{
+  "name": "fastspot",
+  "version": "1.0.0",
+  "description": "Fast-Food Web App with AI-powered meal recommendations",
+  "main": "index.js",
+  "scripts": {
+    "seed": "node db/seed.js",
+    "test:db": "node db/test-connection.js"
+  },
+  "keywords": [
+    "fast-food",
+    "mongodb",
+    "ai",
+    "gemini"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^17.2.3",
+    "mongodb": "^6.3.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

@@ -1,0 +1,1 @@
+<template><div class="container"><p>Orders are created by customers via checkout. No admin creation needed.</p></div></template>
