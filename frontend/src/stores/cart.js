@@ -50,7 +50,6 @@ export const useCartStore = defineStore('cart', () => {
       })
       
       cart.value = data.data
-      console.log('✅ Cart updated:', cart.value)
       return true
     } catch (err) {
       error.value = err.response?.data?.error?.message || 'Failed to add item'

@@ -221,25 +221,20 @@ async function submitQuiz() {
     submitting.value = true
     error.value = null
 
-    console.log('📤 Submitting quiz answers:', answers.value)
     const { data } = await moodAPI.getRecommendations(answers.value)
-    
-    console.log('📥 AI Response:', data.data)
     recommendations.value = data.data
     
     // Fetch recommended products
     const productSlugs = data.data.recommendations
-    console.log('🔍 Loading products by slugs:', productSlugs)
     await loadRecommendedProducts(productSlugs)
     
-    console.log('✅ Loaded products:', recommendedProducts.value)
     showResults.value = true
     
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' })
   } catch (err) {
     error.value = err.response?.data?.error || 'Failed to get recommendations'
-    console.error('❌ Submit quiz error:', err)
+    console.error('Submit quiz error:', err)
   } finally {
     submitting.value = false
   }
@@ -247,15 +242,11 @@ async function submitQuiz() {
 
 async function loadRecommendedProducts(slugs) {
   try {
-    console.log('🔄 Fetching products for slugs:', slugs)
     const promises = slugs.map(slug => productsAPI.getBySlug(slug))
     const results = await Promise.all(promises)
-    console.log('📦 Products fetched:', results.length)
     recommendedProducts.value = results.map(r => r.data.data)
-    console.log('✨ recommendedProducts.value:', recommendedProducts.value)
   } catch (err) {
-    console.error('❌ Load recommended products error:', err)
-    console.error('❌ Error details:', err.response?.data || err.message)
+    console.error('Load recommended products error:', err)
   }
 }
 

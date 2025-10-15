@@ -29,8 +29,7 @@ func NewAuthHandler(repos *repository.Repositories, config *configs.Config) *Aut
 }
 
 func (h *AuthHandler) CreateGuestSession(c *gin.Context) {
-	// TODO: Implement
-	c.JSON(200, gin.H{"success": true, "message": "TODO: Implement CreateGuestSession"})
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Guest session handled by frontend"})
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {
@@ -84,18 +83,15 @@ func (h *AuthHandler) Login(c *gin.Context) {
 }
 
 func (h *AuthHandler) Register(c *gin.Context) {
-	// TODO: Implement
-	c.JSON(200, gin.H{"success": true, "message": "TODO: Implement Register"})
+	c.JSON(http.StatusNotImplemented, gin.H{"error": "Registration not available"})
 }
 
 func (h *AuthHandler) GetCurrentUser(c *gin.Context) {
-	// TODO: Implement
-	c.JSON(200, gin.H{"success": true, "message": "TODO: Implement GetCurrentUser"})
+	c.JSON(http.StatusNotImplemented, gin.H{"error": "Not implemented"})
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
-	// TODO: Implement
-	c.JSON(200, gin.H{"success": true, "message": "TODO: Implement Logout"})
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Logout handled by frontend"})
 }
 
 // Category Handler
@@ -983,16 +979,7 @@ func (h *OrderHandler) Create(c *gin.Context) {
 	// Convert cart items to order items
 	orderItems := make([]models.OrderItem, len(cart.Items))
 	for i, item := range cart.Items {
-		orderItems[i] = models.OrderItem{
-			ProductID:         item.ProductID,
-			Name:              item.Name,
-			Image:             item.Image,
-			Qty:               item.Qty,
-			UnitPriceUSD:      item.UnitPriceUSD,
-			TotalUSD:          item.TotalUSD,
-			ChosenIngredients: item.ChosenIngredients,
-			ChosenOptions:     item.ChosenOptions,
-		}
+		orderItems[i] = models.OrderItem(item)
 	}
 
 	// Create order
@@ -1284,17 +1271,8 @@ func (h *MoodHandler) GetRecommendations(c *gin.Context) {
 	// Get recommendations from Gemini
 	recommendation, err := h.geminiService.GetRecommendations(aiAnswers, questionMaps, productMaps)
 	if err != nil {
-		// Log the error for debugging
-		fmt.Printf("⚠️ Gemini AI Error: %v\n", err)
-		// Fallback to mood rules if AI fails
-		c.JSON(200, gin.H{
-			"success": true,
-			"data": gin.H{
-				"recommendations": []string{"classic-burger"},
-				"reasoning":       "Based on your preferences, we recommend trying our classic options!",
-				"fallback":        true,
-				"aiError":         err.Error(), // Include error for debugging
-			},
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get AI recommendations",
 		})
 		return
 	}

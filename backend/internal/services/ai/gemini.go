@@ -73,35 +73,21 @@ func (s *GeminiService) GetRecommendations(answers []MoodAnswer, questions []map
 		return nil, err
 	}
 
-	// Debug: log prompt size
-	fmt.Printf("📊 Gemini Prompt Size: %d characters\n", len(prompt))
-
 	resp, err := http.Post(apiURL, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
-		fmt.Printf("❌ HTTP Error: %v\n", err)
-		return nil, err
+		return nil, fmt.Errorf("failed to call Gemini API: %w", err)
 	}
 	defer resp.Body.Close()
 
-	// Read response body ONCE
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("❌ Failed to read response body: %v\n", err)
-		return nil, err
+		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
 	// Check HTTP status after reading body
 	if resp.StatusCode != http.StatusOK {
-		fmt.Printf("❌ Gemini API Error (Status %d): %s\n", resp.StatusCode, string(bodyBytes))
-		return nil, fmt.Errorf("Gemini API error: %s", string(bodyBytes))
+		return nil, fmt.Errorf("Gemini API error (status %d): %s", resp.StatusCode, string(bodyBytes))
 	}
-
-	// Log first 500 chars of response for debugging
-	debugLen := 500
-	if len(bodyBytes) < debugLen {
-		debugLen = len(bodyBytes)
-	}
-	fmt.Printf("📥 Gemini API Response (first %d chars): %s\n", debugLen, string(bodyBytes[:debugLen]))
 
 	var geminiResp struct {
 		Candidates []struct {
@@ -119,28 +105,19 @@ func (s *GeminiService) GetRecommendations(answers []MoodAnswer, questions []map
 	}
 
 	if err := json.Unmarshal(bodyBytes, &geminiResp); err != nil {
-		fmt.Printf("❌ JSON Decode Error: %v\n", err)
-		return nil, err
+		return nil, fmt.Errorf("failed to decode Gemini response: %w", err)
 	}
 
 	// Check for API error
 	if geminiResp.Error != nil {
-		fmt.Printf("❌ Gemini API returned error: %s (code %d)\n", geminiResp.Error.Message, geminiResp.Error.Code)
 		return nil, fmt.Errorf("Gemini API error: %s", geminiResp.Error.Message)
 	}
 
 	if len(geminiResp.Candidates) == 0 || len(geminiResp.Candidates[0].Content.Parts) == 0 {
-		fmt.Printf("❌ No candidates in Gemini response. Full response: %s\n", string(bodyBytes))
 		return nil, fmt.Errorf("no response from Gemini API")
 	}
 
 	responseText := geminiResp.Candidates[0].Content.Parts[0].Text
-	// Debug log (truncate if too long)
-	textDebugLen := 200
-	if len(responseText) < textDebugLen {
-		textDebugLen = len(responseText)
-	}
-	fmt.Printf("✅ Gemini Response (first %d chars): %s\n", textDebugLen, responseText[:textDebugLen])
 
 	// Parse AI response
 	recommendation, err := s.parseAIResponse(responseText)
