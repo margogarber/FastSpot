@@ -1,331 +1,659 @@
-# 📊 Database Overview# 📊 Database Diagram
+# 📊 Database Structure# 📊 Database Overview# 📊 Database Diagram
 
 
 
-Quick visual guide to FastSpot's database structure.## How Collections Connect
+A simple visual guide to how FastSpot's database is organized.
 
 
 
-## Main Collections & Relationships```mermaid
+---Quick visual guide to FastSpot's database structure.## How Collections Connect
 
-erDiagram
 
-```mermaid    users ||--o{ carts : "has"
 
-erDiagram    users ||--o{ orders : "places"
+## The Big Picture
 
-    users ||--o{ carts : "has"    users ||--o{ ai_sessions : "creates"
 
-    users ||--o{ orders : "places"    
 
-    categories ||--o{ products : "contains"    categories ||--o{ products : "contains"
+```## Main Collections & Relationships```mermaid
 
-    products }o--o{ carts : "added_to"    
+┌─────────────┐
 
-    products }o--o{ orders : "part_of"    products }o--o{ promotions : "appliesTo"
+│   USERS     │  (Customers & Admins)erDiagram
 
-```    products }o--o{ carts : "items"
+└──────┬──────┘
 
-    products }o--o{ orders : "cartSnapshot"
+       │```mermaid    users ||--o{ carts : "has"
 
-## Collections    products }o--o{ mood_rules : "recommendedProducts"
+       ├─────────────┐
+
+       │             │erDiagram    users ||--o{ orders : "places"
+
+       ▼             ▼
+
+┌─────────┐    ┌─────────┐    users ||--o{ carts : "has"    users ||--o{ ai_sessions : "creates"
+
+│  CARTS  │    │ ORDERS  │
+
+└────┬────┘    └────┬────┘    users ||--o{ orders : "places"    
+
+     │              │
+
+     │    ┌─────────┴─────────┐    categories ||--o{ products : "contains"    categories ||--o{ products : "contains"
+
+     │    │                   │
+
+     ▼    ▼                   ▼    products }o--o{ carts : "added_to"    
+
+┌──────────────┐       ┌─────────────┐
+
+│   PRODUCTS   │◄──────┤ CATEGORIES  │    products }o--o{ orders : "part_of"    products }o--o{ promotions : "appliesTo"
+
+└──────┬───────┘       └─────────────┘
+
+       │```    products }o--o{ carts : "items"
+
+       ▼
+
+┌──────────────┐    products }o--o{ orders : "cartSnapshot"
+
+│  PROMOTIONS  │
+
+└──────────────┘## Collections    products }o--o{ mood_rules : "recommendedProducts"
+
+```
 
     products }o--o{ ai_sessions : "recommends"
 
+---
+
 **users** → Admin & guest accounts      
+
+## How It Works
 
 **categories** → Menu sections (Burgers, Drinks, etc.)      mood_questions }o--o{ ai_sessions : "answers"
 
+### 🛒 Shopping Flow
+
 **products** → Menu items with options      
 
-**carts** → Active shopping carts      users {
+```
 
-**orders** → Completed purchases          ObjectId _id PK
+1. Browse → 2. Add to Cart → 3. Checkout → 4. Create Order**carts** → Active shopping carts      users {
+
+   │            │               │              │
+
+Categories   Products        Cart           Order**orders** → Completed purchases          ObjectId _id PK
+
+```
 
 **promotions** → Special deals          string role
 
+### 👤 Users Can Be
+
 **mood_questions** → Quiz for AI recommendations          string name
 
-**ai_sessions** → AI recommendation history        string email UK
+- **Guest** - Browse and order without account (uses session ID)
 
-        string phone
+- **Admin** - Manage menu, view orders, create promotions**ai_sessions** → AI recommendation history        string email UK
 
-## How It Works        string passwordHash
 
-        date createdAt
+
+---        string phone
+
+
+
+## Main Collections Explained## How It Works        string passwordHash
+
+
+
+### 1. 📂 Categories        date createdAt
+
+Menu sections that organize products.
 
 ### 🛒 Ordering Flow    }
 
-Browse Menu → Add to Cart → Checkout → Order Created    
+```
 
-    categories {
+Examples:Browse Menu → Add to Cart → Checkout → Order Created    
 
-### 🤖 AI Recommendations        ObjectId _id PK
+- Burgers 🍔
+
+- Drinks 🥤    categories {
+
+- Desserts 🍰
+
+- Snacks 🍟### 🤖 AI Recommendations        ObjectId _id PK
+
+```
 
 Take Quiz → AI Analyzes Mood → Suggests Products → Add to Cart        string name
 
-        string slug UK
+### 2. 🍔 Products
+
+Individual menu items.        string slug UK
+
         string image
-        boolean isActive
-    }
-    
-    products {
-        ObjectId _id PK
-        ObjectId categoryId FK
-        string name
-        string slug UK
-        string description
+
+```        boolean isActive
+
+Each product has:    }
+
+- Name & description    
+
+- Price    products {
+
+- Image        ObjectId _id PK
+
+- Category (Burger, Drink, etc.)        ObjectId categoryId FK
+
+- Customization options (size, sauce, extras)        string name
+
+- Tags (vegetarian, spicy, popular)        string slug UK
+
+```        string description
+
         number priceUSD
-        string image
-        boolean isActive
-        array ingredients
-        array options
-        array tags
-    }
-    
-    promotions {
-        ObjectId _id PK
-        string title
-        string description
+
+**Example:**        string image
+
+```        boolean isActive
+
+Big Mac        array ingredients
+
+├── Base Price: $5.99        array options
+
+├── Category: Burgers        array tags
+
+├── Ingredients: pickles, lettuce, onions (removable)    }
+
+├── Options:    
+
+│   ├── Size: Small, Medium, Large (+$1.00)    promotions {
+
+│   └── Sauce: BBQ, Spicy, Classic        ObjectId _id PK
+
+└── Tags: comfort-food, popular        string title
+
+```        string description
+
         date startsAt
-        date endsAt
-        string bannerImage
+
+### 3. 🛒 Carts        date endsAt
+
+Active shopping carts (not checked out yet).        string bannerImage
+
         boolean isActive
-        array appliesTo
-    }
-    
-    carts {
-        ObjectId _id PK
-        ObjectId userId FK
-        string sessionId
-        array items
-        number totalUSD
-        string currency
+
+```        array appliesTo
+
+Cart Items:    }
+
+├── Product: Big Mac    
+
+├── Quantity: 2    carts {
+
+├── Customizations:        ObjectId _id PK
+
+│   ├── No pickles        ObjectId userId FK
+
+│   ├── Large size        string sessionId
+
+│   └── BBQ sauce        array items
+
+└── Total: $13.98        number totalUSD
+
+```        string currency
+
         date updatedAt
-    }
-    
-    orders {
+
+Each cart belongs to either:    }
+
+- A logged-in **user** (userId)    
+
+- A **guest** (sessionId)    orders {
+
         ObjectId _id PK
-        ObjectId userId FK
-        object cartSnapshot
+
+### 4. 📦 Orders        ObjectId userId FK
+
+Completed purchases.        object cartSnapshot
+
         string status
-        object payment
-        object delivery
-        number totalUSD
-        date createdAt
-    }
-    
-    mood_questions {
-        ObjectId _id PK
+
+```        object payment
+
+Order includes:        object delivery
+
+├── Cart snapshot (what was ordered)        number totalUSD
+
+├── Status (pending → preparing → ready → completed)        date createdAt
+
+├── Payment info (card, ApplePay, cash)    }
+
+├── Delivery details (pickup or delivery)    
+
+└── Total price    mood_questions {
+
+```        ObjectId _id PK
+
         number order
-        string question
-        string type
+
+### 5. 🎉 Promotions        string question
+
+Special deals and discounts.        string type
+
         array options
-        boolean isActive
-    }
-    
-    mood_rules {
-        ObjectId _id PK
-        string name
+
+```        boolean isActive
+
+Examples:    }
+
+- "Buy 1 Get 1 Free Burgers"    
+
+- "20% Off All Drinks"    mood_rules {
+
+- "Combo Deal: Burger + Fries + Drink"        ObjectId _id PK
+
+```        string name
+
         object conditions
-        array recommendedProducts
-        number priority
-        boolean isActive
-    }
+
+Each promotion:        array recommendedProducts
+
+- Has start and end dates        number priority
+
+- Applies to specific products        boolean isActive
+
+- Can be active or inactive    }
+
     
-    ai_sessions {
+
+### 6. 😊 Mood Quiz & AI    ai_sessions {
+
         ObjectId _id PK
-        ObjectId userId FK
-        string sessionId
-        array answers
-        object aiResponse
-        boolean fallbackUsed
-        date createdAt
-    }
+
+**mood_questions** - Quiz to understand customer mood        ObjectId userId FK
+
+```        string sessionId
+
+Question: "How are you feeling?"        array answers
+
+Answers:        object aiResponse
+
+- Happy 😊        boolean fallbackUsed
+
+- Tired 😴        date createdAt
+
+- Hungry 😋    }
+
+- Stressed 😰```
+
 ```
 
 ---
 
-## Основные потоки данных
+**ai_sessions** - AI recommends products based on mood
 
-### 1. 🛒 Процесс заказа
+```## Основные потоки данных
+
+User takes quiz → AI analyzes → Suggests products
+
+Example: Feeling stressed → Recommends comfort food### 1. 🛒 Процесс заказа
+
+```
 
 ```mermaid
-flowchart LR
+
+---flowchart LR
+
     A[User] -->|browse| B[Products]
-    B -->|add to| C[Cart]
+
+## Relationships    B -->|add to| C[Cart]
+
     C -->|checkout| D[Order]
-    D -->|snapshot| C
+
+### One-to-Many    D -->|snapshot| C
+
     
-    E[Categories] -->|organize| B
-    F[Promotions] -.->|discount| B
-```
 
-### 2. 🤖 AI-рекомендации
+```    E[Categories] -->|organize| B
 
-```mermaid
+1 Category → Many Products    F[Promotions] -.->|discount| B
+
+└─ "Burgers" category contains:```
+
+   - Big Mac
+
+   - Cheeseburger### 2. 🤖 AI-рекомендации
+
+   - Veggie Burger
+
+``````mermaid
+
 flowchart TD
-    A[User начинает Quiz] --> B[Mood Questions]
-    B --> C[User отвечает]
-    C --> D[AI Session создан]
-    D --> E{Gemini API доступен?}
-    E -->|Да| F[Gemini анализирует]
-    E -->|Нет| G[Mood Rules применяются]
+
+```    A[User начинает Quiz] --> B[Mood Questions]
+
+1 User → Many Orders    B --> C[User отвечает]
+
+└─ Customer "John" has placed:    C --> D[AI Session создан]
+
+   - Order #1 (yesterday)    D --> E{Gemini API доступен?}
+
+   - Order #2 (today)    E -->|Да| F[Gemini анализирует]
+
+```    E -->|Нет| G[Mood Rules применяются]
+
     F --> H[Рекомендации]
-    G --> H
+
+### Many-to-Many    G --> H
+
     H --> I[Products добавлены в Cart]
-```
 
-### 3. 👤 Типы пользователей
+``````
 
-```mermaid
-flowchart LR
-    A[User] --> B{Авторизован?}
+Products ↔ Promotions
+
+├─ "Buy 1 Get 1" promotion applies to:### 3. 👤 Типы пользователей
+
+│  - Big Mac
+
+│  - Cheeseburger```mermaid
+
+└─ "Big Mac" can be in multiple promotionsflowchart LR
+
+```    A[User] --> B{Авторизован?}
+
     B -->|Да| C[userId]
-    B -->|Нет| D[sessionId]
+
+---    B -->|Нет| D[sessionId]
+
     C --> E[Cart/Orders привязаны к userId]
-    D --> F[Cart привязана к sessionId]
+
+## Data Flow Examples    D --> F[Cart привязана к sessionId]
+
     
-    style C fill:#90EE90
+
+### Example 1: Customer Makes an Order    style C fill:#90EE90
+
     style D fill:#FFB6C1
-```
 
----
+``````
 
-## Детальная структура коллекций
+Step 1: Customer browses Menu
 
-### Products - самая сложная структура
+        ↓---
 
-```mermaid
-graph TB
-    A[Product] --> B[Basic Info]
-    A --> C[Pricing]
-    A --> D[Customization]
-    A --> E[Relations]
-    
+     Products (filtered by Category)
+
+        ## Детальная структура коллекций
+
+Step 2: Customer adds items to Cart
+
+        ↓### Products - самая сложная структура
+
+     Cart (stores productId + customizations)
+
+        ```mermaid
+
+Step 3: Customer checks outgraph TB
+
+        ↓    A[Product] --> B[Basic Info]
+
+     Order created (with cart snapshot)    A --> C[Pricing]
+
+        ↓    A --> D[Customization]
+
+     Cart is cleared    A --> E[Relations]
+
+```    
+
     B --> B1[name, slug, description]
-    B --> B2[image, isActive]
+
+### Example 2: AI Recommendation    B --> B2[image, isActive]
+
     
-    C --> C1[priceUSD]
-    C --> C2[currency: USD]
-    
-    D --> D1[Ingredients]
-    D --> D2[Options]
-    D --> D3[Tags]
-    
-    D1 --> D1A[pickles, onions, lettuce]
-    D1 --> D1B[defaultIncluded: true/false]
-    
-    D2 --> D2A[Size: small/medium/large]
-    D2 --> D2B[Sauce: bbq/spicy/classic]
-    D2 --> D2C[extraPriceUSD per choice]
-    
-    D3 --> D3A[comfort-food, healthy]
+
+```    C --> C1[priceUSD]
+
+Step 1: Customer takes Mood Quiz    C --> C2[currency: USD]
+
+        ↓    
+
+     mood_questions shown    D --> D1[Ingredients]
+
+            D --> D2[Options]
+
+Step 2: Customer answers    D --> D3[Tags]
+
+        ↓    
+
+     Answers saved in ai_sessions    D1 --> D1A[pickles, onions, lettuce]
+
+            D1 --> D1B[defaultIncluded: true/false]
+
+Step 3: AI analyzes mood    
+
+        ↓    D2 --> D2A[Size: small/medium/large]
+
+     AI recommends Products    D2 --> D2B[Sauce: bbq/spicy/classic]
+
+        ↓    D2 --> D2C[extraPriceUSD per choice]
+
+     Products added to Cart    
+
+```    D3 --> D3A[comfort-food, healthy]
+
     D3 --> D3B[vegetarian, spicy]
-    D3 --> D3C[для AI matching]
+
+---    D3 --> D3C[для AI matching]
+
     
-    E --> E1[categoryId → Categories]
+
+## Field Types Quick Reference    E --> E1[categoryId → Categories]
+
     E --> E2[используется в Carts]
-    E --> E3[используется в Orders]
-    E --> E4[используется в Promotions]
-```
 
-### Cart Items - структура элемента корзины
+| Type | Example | Used For |    E --> E3[используется в Orders]
 
-```json
-{
-  "items": [
+|------|---------|----------|    E --> E4[используется в Promotions]
+
+| **String** | "Big Mac" | Names, descriptions, text |```
+
+| **Number** | 5.99 | Prices, quantities |
+
+| **Boolean** | true/false | Active/inactive, yes/no |### Cart Items - структура элемента корзины
+
+| **Date** | 2024-01-15 | Created dates, timestamps |
+
+| **ObjectId** | 507f1f77... | Unique IDs, references |```json
+
+| **Array** | ["tag1", "tag2"] | Lists, multiple values |{
+
+| **Object** | {name: "...", price: ...} | Complex data structures |  "items": [
+
     {
-      "productId": "ObjectId",
+
+---      "productId": "ObjectId",
+
       "qty": 2,
-      "chosenIngredients": ["pickles", "onions"],
+
+## Quick Stats      "chosenIngredients": ["pickles", "onions"],
+
       "chosenOptions": {
-        "size": "large",
+
+After running `seed.js`:        "size": "large",
+
         "sauce": "bbq"
-      },
-      "unitPriceUSD": 7.99,
-      "totalUSD": 15.98
-    }
-  ],
-  "totalUSD": 15.98
-}
+
+```      },
+
+📊 Database contains:      "unitPriceUSD": 7.99,
+
+├─ 1 admin user      "totalUSD": 15.98
+
+├─ 4 categories    }
+
+├─ 10 products  ],
+
+├─ 3 promotions  "totalUSD": 15.98
+
+├─ 8 quiz questions}
+
+└─ 0 orders (starts empty)```
+
 ```
 
 ### Order - полная информация
 
+---
+
 ```json
-{
+
+## Visual Schema{
+
   "cartSnapshot": { /* копия cart */ },
-  "status": "preparing",
-  "payment": {
-    "method": "card",
-    "status": "paid"
-  },
-  "delivery": {
-    "type": "courier",
-    "address": "123 Main St",
+
+```  "status": "preparing",
+
+users {  "payment": {
+
+  _id: ObjectId    "method": "card",
+
+  role: "admin" | "guest"    "status": "paid"
+
+  email: "admin@local"  },
+
+  passwordHash: "..."  "delivery": {
+
+  name: "Admin"    "type": "courier",
+
+}    "address": "123 Main St",
+
     "eta": "2024-01-15T18:30:00Z",
-    "tracking": [
-      {
-        "ts": "2024-01-15T17:00:00Z",
-        "status": "preparing",
-        "note": "Ваш заказ готовится"
-      }
-    ]
+
+categories {    "tracking": [
+
+  _id: ObjectId      {
+
+  name: "Burgers"        "ts": "2024-01-15T17:00:00Z",
+
+  slug: "burgers"        "status": "preparing",
+
+  image: "url"        "note": "Ваш заказ готовится"
+
+  isActive: true      }
+
+}    ]
+
   }
-}
-```
 
----
+products {}
 
-## Индексы для производительности
+  _id: ObjectId```
 
-### Критические индексы
+  categoryId: → categories._id
 
-| Коллекция | Поле | Тип | Цель |
-|-----------|------|-----|------|
-| **users** | email | unique | Быстрый поиск по email |
+  name: "Big Mac"---
+
+  slug: "big-mac"
+
+  priceUSD: 5.99## Индексы для производительности
+
+  image: "url"
+
+  ingredients: [...]### Критические индексы
+
+  options: [...]
+
+  tags: ["comfort-food"]| Коллекция | Поле | Тип | Цель |
+
+  isActive: true|-----------|------|-----|------|
+
+}| **users** | email | unique | Быстрый поиск по email |
+
 | **categories** | slug | unique | URL-friendly поиск |
-| **products** | slug | unique | URL-friendly поиск |
-| **products** | categoryId | index | Фильтр по категории |
-| **products** | tags | index | AI matching |
-| **carts** | userId | index | Поиск корзины пользователя |
-| **carts** | sessionId | index | Гостевые корзины |
-| **orders** | createdAt | index (desc) | Сортировка новых заказов |
-| **orders** | status | index | Фильтр по статусу |
 
----
+carts {| **products** | slug | unique | URL-friendly поиск |
 
-## Примеры запросов
+  _id: ObjectId| **products** | categoryId | index | Фильтр по категории |
 
-### Найти все бургеры дешевле $7
+  userId: → users._id (or null for guests)| **products** | tags | index | AI matching |
 
-```javascript
+  sessionId: "guest_abc123"| **carts** | userId | index | Поиск корзины пользователя |
+
+  items: [| **carts** | sessionId | index | Гостевые корзины |
+
+    {| **orders** | createdAt | index (desc) | Сортировка новых заказов |
+
+      productId: → products._id| **orders** | status | index | Фильтр по статусу |
+
+      qty: 2
+
+      chosenIngredients: ["pickles"]---
+
+      chosenOptions: {"size": "large"}
+
+      totalUSD: 13.98## Примеры запросов
+
+    }
+
+  ]### Найти все бургеры дешевле $7
+
+  totalUSD: 13.98
+
+}```javascript
+
 db.products.find({
-  categoryId: burgersCategory._id,
-  priceUSD: { $lt: 7 },
-  isActive: true
-}).sort({ priceUSD: 1 })
-```
 
-### Найти продукты для "комфортной еды"
+orders {  categoryId: burgersCategory._id,
 
-```javascript
-db.products.find({
+  _id: ObjectId  priceUSD: { $lt: 7 },
+
+  userId: → users._id (or null)  isActive: true
+
+  cartSnapshot: {...}}).sort({ priceUSD: 1 })
+
+  status: "pending"```
+
+  payment: {method: "card", status: "paid"}
+
+  delivery: {type: "pickup", eta: Date}### Найти продукты для "комфортной еды"
+
+  totalUSD: 13.98
+
+  createdAt: Date```javascript
+
+}db.products.find({
+
   tags: { $in: ["comfort-food", "indulgent"] },
-  isActive: true
-})
-```
 
-### Создать заказ из корзины
+promotions {  isActive: true
 
-```javascript
-// 1. Получить корзину
-const cart = await db.carts.findOne({ userId: userId })
+  _id: ObjectId})
 
-// 2. Создать заказ
+  title: "Buy 1 Get 1 Free"```
+
+  startsAt: Date
+
+  endsAt: Date### Создать заказ из корзины
+
+  appliesTo: [→ products._id]
+
+  isActive: true```javascript
+
+}// 1. Получить корзину
+
+```const cart = await db.carts.findOne({ userId: userId })
+
+
+
+---// 2. Создать заказ
+
 await db.orders.insertOne({
-  userId: userId,
+
+**That's the complete structure! Simple, right? 🎯**  userId: userId,
+
   cartSnapshot: {
     items: cart.items,
     totalUSD: cart.totalUSD

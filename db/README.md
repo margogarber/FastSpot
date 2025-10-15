@@ -1,194 +1,386 @@
-# FastSpot Database# FastSpot Database Setup
+# 🗄️ FastSpot Database# FastSpot Database# FastSpot Database Setup
 
 
 
-Setup and usage guide for FastSpot's MongoDB database.Инструкции по настройке и работе с базой данных MongoDB для приложения FastSpot.
+Simple guide to understanding and setting up the FastSpot database.
 
 
 
-## Requirements## 📋 Содержание
+---Setup and usage guide for FastSpot's MongoDB database.Инструкции по настройке и работе с базой данных MongoDB для приложения FastSpot.
 
 
 
-- Node.js >= 16- [Требования](#требования)
+## What's This?
+
+
+
+FastSpot uses **MongoDB** to store everything:## Requirements## 📋 Содержание
+
+- Menu items (burgers, drinks, etc.)
+
+- User orders
+
+- Shopping carts
+
+- Admin accounts- Node.js >= 16- [Требования](#требования)
+
+- Promotions
 
 - MongoDB >= 5.0- [Установка](#установка)
 
+---
+
 - npm- [Конфигурация](#конфигурация)
+
+## Quick Setup (3 Steps!)
 
 - [Заполнение данными](#заполнение-данными)
 
-## Installation- [Структура данных](#структура-данных)
+### 1️⃣ Install Packages
 
-- [Полезные команды](#полезные-команды)
+```bash## Installation- [Структура данных](#структура-данных)
 
-### 1. Install Dependencies
+npm install
 
----
+```- [Полезные команды](#полезные-команды)
+
+
+
+### 2️⃣ Create `.env` File### 1. Install Dependencies
 
 ```bash
 
-npm install## 🔧 Требования
+MONGODB_URI=mongodb://admin:Admin123!@localhost:27017/fastspot?authSource=admin---
 
 ```
 
-- **Node.js** >= 16.x
+```bash
 
-### 2. Start MongoDB- **MongoDB** >= 5.0
+### 3️⃣ Fill Database with Sample Data
 
-- **npm** или **yarn**
+```bashnpm install## 🔧 Требования
 
-**Local:**
+node seed.js
 
-```bash---
-
-# macOS
-
-brew services start mongodb-community## 📦 Установка
+``````
 
 
+
+✅ **Done!** You now have:- **Node.js** >= 16.x
+
+- 1 admin account
+
+- 4 categories (Burgers, Drinks, Desserts, Snacks)### 2. Start MongoDB- **MongoDB** >= 5.0
+
+- 10 menu items
+
+- 3 special promotions- **npm** или **yarn**
+
+
+
+---**Local:**
+
+
+
+## 🔑 Login Info```bash---
+
+
+
+After running the setup, you can log in as admin:# macOS
+
+
+
+```brew services start mongodb-community## 📦 Установка
+
+Email: admin@local
+
+Password: Admin123!
+
+```
 
 # Linux### 1. Установите зависимости
 
+---
+
 sudo systemctl start mongod
 
+## What's in the Database?
+
 ``````bash
+
+### 📦 Main Collections (Tables)
 
 npm install mongodb bcryptjs
 
-**Docker:**```
+| Collection | What It Stores |
 
-```bash
+|------------|----------------|**Docker:**```
 
-docker-compose up -d mongodbИли если используете yarn:
+| **users** | Admin and customer accounts |
 
-```
+| **categories** | Menu sections (Burgers, Drinks, etc.) |```bash
 
-```bash
+| **products** | Menu items with prices & options |
 
-## Configurationyarn add mongodb bcryptjs
+| **carts** | Active shopping carts |docker-compose up -d mongodbИли если используете yarn:
 
-```
+| **orders** | Completed purchases |
 
-Create `.env` file:
+| **promotions** | Special deals & discounts |```
 
-### 2. Убедитесь, что MongoDB запущен
+| **mood_questions** | Quiz questions for recommendations |
 
-```env
+| **ai_sessions** | AI recommendation history |```bash
 
-MONGODB_URI=mongodb://admin:Admin123!@localhost:27017/fastspot?authSource=admin#### Локальная установка:
 
-``````bash
 
-# macOS (через Homebrew)
+---## Configurationyarn add mongodb bcryptjs
+
+
+
+## How Things Connect```
+
+
+
+```Create `.env` file:
+
+Categories → Products → Carts → Orders
+
+                ↓### 2. Убедитесь, что MongoDB запущен
+
+            Promotions
+
+``````env
+
+
+
+**Example:**MONGODB_URI=mongodb://admin:Admin123!@localhost:27017/fastspot?authSource=admin#### Локальная установка:
+
+1. "Burgers" is a **category**
+
+2. "Big Mac" is a **product** in that category``````bash
+
+3. Customer adds Big Mac to their **cart**
+
+4. Customer checks out → Creates an **order**# macOS (через Homebrew)
+
+5. **Promotions** can apply discounts to products
 
 For MongoDB Atlas (cloud):brew services start mongodb-community
 
+---
+
 ```env
+
+## Common Tasks
 
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/fastspot# Linux (systemd)
 
-```sudo systemctl start mongod
+### View All Menu Items
 
+```bash```sudo systemctl start mongod
 
+mongosh fastspot
+
+db.products.find().pretty()
+
+```
 
 ## Seeding Data# Проверка статуса
 
-mongosh --eval "db.runCommand({ ping: 1 })"
+### Check Orders
 
-Run the seed script to populate the database:```
+```bashmongosh --eval "db.runCommand({ ping: 1 })"
+
+db.orders.find().pretty()
+
+```Run the seed script to populate the database:```
 
 
 
-```bash#### Docker:
+### See Active Promotions
+
+```bash
+
+db.promotions.find({ isActive: true })```bash#### Docker:
+
+```
 
 node seed.js```bash
 
-```docker run -d \
+### Reset Database
 
-  --name fastspot-mongo \
+```bash```docker run -d \
+
+node seed.js
+
+```  --name fastspot-mongo \
+
+This will clear everything and start fresh with sample data.
 
 This creates:  -p 27017:27017 \
 
+---
+
 - **1 admin user**  -e MONGO_INITDB_ROOT_USERNAME=admin \
+
+## Troubleshooting
 
   - Email: `admin@local`  -e MONGO_INITDB_ROOT_PASSWORD=password \
 
+### ❌ "Can't connect to MongoDB"
+
   - Password: `Admin123!`  mongo:7
+
+**Make sure MongoDB is running:**
 
 - **4 categories** (Burgers, Drinks, Desserts, Snacks)```
 
-- **10 products** with customization options
+```bash
+
+# macOS- **10 products** with customization options
+
+brew services start mongodb-community
 
 - **3 promotions**---
 
-- **8 mood quiz questions**
+# Or use Docker
+
+docker-compose up -d mongodb- **8 mood quiz questions**
+
+```
 
 - **Indexes** for better performance## ⚙️ Конфигурация
 
-
-
-## Database Structure### Переменные окружения
-
-
-
-See [schema.md](./schema.md) for detailed collection schemas.Создайте файл `.env` в корне проекта:
+### ❌ "Authentication failed"
 
 
 
-### Main Collections```env
+Check your `.env` file has the correct connection string:
+
+```## Database Structure### Переменные окружения
+
+MONGODB_URI=mongodb://admin:Admin123!@localhost:27017/fastspot?authSource=admin
+
+```
+
+
+
+### ❌ "Port 27017 in use"See [schema.md](./schema.md) for detailed collection schemas.Создайте файл `.env` в корне проекта:
+
+
+
+Something else is using MongoDB's port:
+
+```bash
+
+lsof -i :27017### Main Collections```env
+
+```
 
 # MongoDB Connection
 
+---
+
 - **users** - Admin and guest accountsMONGODB_URI=mongodb://localhost:27017/fastspot
+
+## Useful Tools
 
 - **categories** - Menu categories
 
-- **products** - Menu items with options# Для MongoDB Atlas (облачная версия)
+**MongoDB Compass** - Visual database browser
 
-- **promotions** - Special offers# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/fastspot?retryWrites=true&w=majority
+- Download: https://www.mongodb.com/products/compass- **products** - Menu items with options# Для MongoDB Atlas (облачная версия)
 
-- **carts** - Shopping carts
+- Connect with your `MONGODB_URI`
 
-- **orders** - Completed orders# Для Docker с авторизацией
+- Browse and edit data visually- **promotions** - Special offers# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/fastspot?retryWrites=true&w=majority
 
-- **mood_questions** - AI quiz questions# MONGODB_URI=mongodb://admin:password@localhost:27017/fastspot?authSource=admin
+
+
+**mongosh** - Command-line tool- **carts** - Shopping carts
+
+```bash
+
+mongosh fastspot- **orders** - Completed orders# Для Docker с авторизацией
+
+show collections
+
+db.products.find()- **mood_questions** - AI quiz questions# MONGODB_URI=mongodb://admin:password@localhost:27017/fastspot?authSource=admin
+
+```
 
 - **mood_rules** - AI recommendation rules```
 
+---
+
 - **ai_sessions** - AI recommendation history
+
+## Need More Info?
 
 ### Настройка MongoDB Atlas (опционально)
 
-## Useful Commands
+- **schema.md** - Detailed structure of each collection
 
-Если вы хотите использовать облачную MongoDB:
+- **QUERIES.md** - Useful database queries## Useful Commands
 
-### Connect to MongoDB
+- **QUICKSTART.md** - Fast setup guide
 
-1. Зарегистрируйтесь на [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
-
-```bash2. Создайте бесплатный кластер
-
-# Local3. Настройте Network Access (добавьте свой IP или `0.0.0.0/0` для разработки)
-
-mongosh fastspot4. Создайте пользователя базы данных
-
-5. Получите строку подключения (Connection String)
-
-# With auth6. Вставьте её в `MONGODB_URI` в файле `.env`
-
-mongosh -u admin -p Admin123! --authenticationDatabase admin fastspot
-
-```---
+- **seed.js** - See what sample data looks likeЕсли вы хотите использовать облачную MongoDB:
 
 
 
-### View Data## 🌱 Заполнение данными
+---### Connect to MongoDB
 
 
+
+## Sample Data Included1. Зарегистрируйтесь на [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+
+
+
+After running `seed.js`, you'll have:```bash2. Создайте бесплатный кластер
+
+
+
+**Products:**# Local3. Настройте Network Access (добавьте свой IP или `0.0.0.0/0` для разработки)
+
+- 🍔 Big Mac, Cheeseburger, Veggie Burger
+
+- 🥤 Coca-Cola, Sprite, Orange Juicemongosh fastspot4. Создайте пользователя базы данных
+
+- 🍰 Chocolate Cake, Apple Pie
+
+- 🍟 French Fries, Onion Rings5. Получите строку подключения (Connection String)
+
+
+
+**Categories:**# With auth6. Вставьте её в `MONGODB_URI` в файле `.env`
+
+- Burgers
+
+- Drinks  mongosh -u admin -p Admin123! --authenticationDatabase admin fastspot
+
+- Desserts
+
+- Snacks```---
+
+
+
+**Promotions:**
+
+- Buy 1 Get 1 Free
+
+- 20% Off Drinks### View Data## 🌱 Заполнение данными
+
+- Combo Deals
+
+
+
+---
 
 ```javascript### Запуск скрипта seed
+
+**That's it! You're ready to start developing! 🚀**
 
 // Show collections
 
