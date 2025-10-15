@@ -5,7 +5,7 @@ import { fileURLToPath, URL } from 'node:url'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue()],
-  base: '/FastSpot/', // Set this to your repository name
+  base: '/', // Use root path for Railway deployment
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

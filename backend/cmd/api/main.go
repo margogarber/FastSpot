@@ -79,6 +79,20 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
+	// Serve static frontend files in production
+	router.Static("/assets", "./frontend/dist/assets")
+	router.StaticFile("/vite.svg", "./frontend/dist/vite.svg")
+	
+	// Serve index.html for all non-API routes (SPA fallback)
+	router.NoRoute(func(c *gin.Context) {
+		// Only serve index.html for non-API routes
+		if len(c.Request.URL.Path) >= 4 && c.Request.URL.Path[:4] == "/api" {
+			c.JSON(404, gin.H{"error": "API endpoint not found"})
+			return
+		}
+		c.File("./frontend/dist/index.html")
+	})
+
 	// Health check endpoint
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok", "message": "FastSpot API is running"})

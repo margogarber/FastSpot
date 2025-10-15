@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ['go_1_22', 'nodejs_20']
+
+[phases.build]
+cmds = [
+  'cd backend && go build -o bin/api ./cmd/api',
+  'cd frontend && npm ci && npm run build'
+]
+
+[start]
+cmd = './backend/bin/api'
