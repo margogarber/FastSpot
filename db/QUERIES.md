@@ -1,125 +1,247 @@
-# 📝 MongoDB Queries - Полезные примеры
+# 📝 Useful Database Queries# 📝 MongoDB Queries - Полезные примеры
 
-Коллекция практических MongoDB запросов для FastSpot.
 
----
 
-## 🔍 Поиск и фильтрация
+Handy MongoDB queries for working with FastSpot data.Коллекция практических MongoDB запросов для FastSpot.
 
-### Продукты
 
-```javascript
-// Найти все активные бургеры
-db.products.find({
-  categoryId: ObjectId("..."),
-  isActive: true
+
+## Finding Products---
+
+
+
+```javascript## 🔍 Поиск и фильтрация
+
+// All active products
+
+db.products.find({ isActive: true })### Продукты
+
+
+
+// Search by category```javascript
+
+db.products.find({ // Найти все активные бургеры
+
+  categoryId: ObjectId("..."),db.products.find({
+
+  isActive: true   categoryId: ObjectId("..."),
+
+})  isActive: true
+
 })
 
-// Поиск по тегам (вегетарианское)
-db.products.find({
-  tags: "vegetarian",
-  isActive: true
+// Search by tags (vegetarian)
+
+db.products.find({ // Поиск по тегам (вегетарианское)
+
+  tags: "vegetarian",db.products.find({
+
+  isActive: true   tags: "vegetarian",
+
+})  isActive: true
+
 })
 
-// Поиск по нескольким тегам (OR)
-db.products.find({
-  tags: { $in: ["comfort-food", "healthy"] },
+// Price filter
+
+db.products.find({// Поиск по нескольким тегам (OR)
+
+  priceUSD: { $gte: 5, $lte: 10 }db.products.find({
+
+}).sort({ priceUSD: 1 })  tags: { $in: ["comfort-food", "healthy"] },
+
   isActive: true
+
+// Text search})
+
+db.products.find({
+
+  name: { $regex: /burger/i }// Поиск по нескольким тегам (AND)
+
+})db.products.find({
+
+```  tags: { $all: ["comfort-food", "popular"] },
+
+  isActive: true
+
+## Orders})
+
+
+
+```javascript// Фильтр по цене
+
+// User's ordersdb.products.find({
+
+db.orders.find({   priceUSD: { $gte: 5, $lte: 10 },
+
+  userId: ObjectId("...")   isActive: true
+
+}).sort({ createdAt: -1 })}).sort({ priceUSD: 1 })
+
+
+
+// Active orders (not completed)// Текстовый поиск по названию (регулярное выражение)
+
+db.orders.find({db.products.find({
+
+  status: { $in: ["pending", "preparing", "delivering"] }  name: { $regex: /burger/i },
+
+})  isActive: true
+
 })
 
-// Поиск по нескольким тегам (AND)
-db.products.find({
-  tags: { $all: ["comfort-food", "popular"] },
-  isActive: true
-})
+// Today's orders
 
-// Фильтр по цене
-db.products.find({
-  priceUSD: { $gte: 5, $lte: 10 },
-  isActive: true
-}).sort({ priceUSD: 1 })
+db.orders.find({// Продукты с определенным ингредиентом
 
-// Текстовый поиск по названию (регулярное выражение)
-db.products.find({
-  name: { $regex: /burger/i },
-  isActive: true
-})
+  createdAt: { $gte: new Date().setHours(0,0,0,0) }db.products.find({
 
-// Продукты с определенным ингредиентом
-db.products.find({
-  "ingredients.key": "pickles",
-  isActive: true
-})
+})  "ingredients.key": "pickles",
 
-// Продукты с опцией "размер"
-db.products.find({
-  "options.key": "size",
   isActive: true
-})
+
+// Paid orders})
+
+db.orders.find({ 
+
+  "payment.status": "paid" // Продукты с опцией "размер"
+
+})db.products.find({
+
+```  "options.key": "size",
+
+  isActive: true
+
+## Shopping Carts})
+
 ```
 
-### Категории
+```javascript
+
+// User's cart### Категории
+
+db.carts.findOne({ userId: ObjectId("...") })
 
 ```javascript
-// Найти категорию по slug
-db.categories.findOne({
+
+// Guest cart// Найти категорию по slug
+
+db.carts.findOne({ sessionId: "guest_abc123" })db.categories.findOne({
+
   slug: "burgers",
-  isActive: true
+
+// Carts with items  isActive: true
+
+db.carts.find({})
+
+  items: { $ne: [] },
+
+  totalUSD: { $gt: 0 }// Все активные категории
+
+})db.categories.find({
+
+```  isActive: true
+
+}).sort({ name: 1 })
+
+## Active Promotions```
+
+
+
+```javascript### Заказы
+
+// Current promotions
+
+const now = new Date()```javascript
+
+db.promotions.find({// Заказы пользователя
+
+  isActive: true,db.orders.find({
+
+  startsAt: { $lte: now },  userId: ObjectId("...")
+
+  endsAt: { $gte: now }}).sort({ createdAt: -1 })
+
 })
 
-// Все активные категории
-db.categories.find({
-  isActive: true
-}).sort({ name: 1 })
-```
+```// Активные заказы (не завершены)
 
-### Заказы
+db.orders.find({
+
+## Analytics  status: { $in: ["pending", "preparing", "delivering"] }
+
+}).sort({ createdAt: -1 })
 
 ```javascript
-// Заказы пользователя
-db.orders.find({
-  userId: ObjectId("...")
-}).sort({ createdAt: -1 })
 
-// Активные заказы (не завершены)
-db.orders.find({
-  status: { $in: ["pending", "preparing", "delivering"] }
-}).sort({ createdAt: -1 })
+// Products by category// Заказы за сегодня
 
-// Заказы за сегодня
-const today = new Date()
-today.setHours(0, 0, 0, 0)
+db.products.aggregate([const today = new Date()
+
+  { $match: { isActive: true } },today.setHours(0, 0, 0, 0)
+
+  { $group: {
+
+    _id: "$categoryId",db.orders.find({
+
+    count: { $sum: 1 },  createdAt: { $gte: today }
+
+    avgPrice: { $avg: "$priceUSD" }})
+
+  }}
+
+])// Заказы за период
 
 db.orders.find({
-  createdAt: { $gte: today }
-})
 
-// Заказы за период
-db.orders.find({
-  createdAt: {
-    $gte: new Date("2024-01-01"),
-    $lte: new Date("2024-01-31")
-  }
-})
+// Top ordered products  createdAt: {
 
-// Заказы на доставку
-db.orders.find({
-  "delivery.type": "courier"
-})
+db.orders.aggregate([    $gte: new Date("2024-01-01"),
+
+  { $match: { status: "completed" } },    $lte: new Date("2024-01-31")
+
+  { $unwind: "$cartSnapshot.items" },  }
+
+  { $group: {})
+
+    _id: "$cartSnapshot.items.productId",
+
+    totalOrdered: { $sum: "$cartSnapshot.items.qty" }// Заказы на доставку
+
+  }},db.orders.find({
+
+  { $sort: { totalOrdered: -1 } },  "delivery.type": "courier"
+
+  { $limit: 10 }})
+
+])
 
 // Оплаченные заказы
-db.orders.find({
-  "payment.status": "paid"
-})
-```
 
-### Корзины
+// Total revenuedb.orders.find({
 
-```javascript
-// Корзина пользователя
-db.carts.findOne({
-  userId: ObjectId("...")
-})
+db.orders.aggregate([  "payment.status": "paid"
+
+  { $match: { })
+
+    status: "completed",```
+
+    "payment.status": "paid" 
+
+  }},### Корзины
+
+  { $group: {
+
+    _id: null,```javascript
+
+    totalRevenue: { $sum: "$totalUSD" }// Корзина пользователя
+
+  }}db.carts.findOne({
+
+])  userId: ObjectId("...")
+
+```})
+
 
 // Корзина гостя
 db.carts.findOne({

@@ -1,151 +1,299 @@
-# FastSpot Database Setup
+# FastSpot Database# FastSpot Database Setup
 
-Инструкции по настройке и работе с базой данных MongoDB для приложения FastSpot.
 
-## 📋 Содержание
 
-- [Требования](#требования)
-- [Установка](#установка)
-- [Конфигурация](#конфигурация)
+Setup and usage guide for FastSpot's MongoDB database.Инструкции по настройке и работе с базой данных MongoDB для приложения FastSpot.
+
+
+
+## Requirements## 📋 Содержание
+
+
+
+- Node.js >= 16- [Требования](#требования)
+
+- MongoDB >= 5.0- [Установка](#установка)
+
+- npm- [Конфигурация](#конфигурация)
+
 - [Заполнение данными](#заполнение-данными)
-- [Структура данных](#структура-данных)
+
+## Installation- [Структура данных](#структура-данных)
+
 - [Полезные команды](#полезные-команды)
 
+### 1. Install Dependencies
+
 ---
 
-## 🔧 Требования
+```bash
+
+npm install## 🔧 Требования
+
+```
 
 - **Node.js** >= 16.x
-- **MongoDB** >= 5.0
+
+### 2. Start MongoDB- **MongoDB** >= 5.0
+
 - **npm** или **yarn**
 
----
+**Local:**
 
-## 📦 Установка
+```bash---
 
-### 1. Установите зависимости
+# macOS
 
-```bash
+brew services start mongodb-community## 📦 Установка
+
+
+
+# Linux### 1. Установите зависимости
+
+sudo systemctl start mongod
+
+``````bash
+
 npm install mongodb bcryptjs
-```
 
-Или если используете yarn:
+**Docker:**```
 
 ```bash
-yarn add mongodb bcryptjs
+
+docker-compose up -d mongodbИли если используете yarn:
+
 ```
+
+```bash
+
+## Configurationyarn add mongodb bcryptjs
+
+```
+
+Create `.env` file:
 
 ### 2. Убедитесь, что MongoDB запущен
 
-#### Локальная установка:
-```bash
+```env
+
+MONGODB_URI=mongodb://admin:Admin123!@localhost:27017/fastspot?authSource=admin#### Локальная установка:
+
+``````bash
+
 # macOS (через Homebrew)
-brew services start mongodb-community
 
-# Linux (systemd)
-sudo systemctl start mongod
-
-# Проверка статуса
-mongosh --eval "db.runCommand({ ping: 1 })"
-```
-
-#### Docker:
-```bash
-docker run -d \
-  --name fastspot-mongo \
-  -p 27017:27017 \
-  -e MONGO_INITDB_ROOT_USERNAME=admin \
-  -e MONGO_INITDB_ROOT_PASSWORD=password \
-  mongo:7
-```
-
----
-
-## ⚙️ Конфигурация
-
-### Переменные окружения
-
-Создайте файл `.env` в корне проекта:
+For MongoDB Atlas (cloud):brew services start mongodb-community
 
 ```env
+
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/fastspot# Linux (systemd)
+
+```sudo systemctl start mongod
+
+
+
+## Seeding Data# Проверка статуса
+
+mongosh --eval "db.runCommand({ ping: 1 })"
+
+Run the seed script to populate the database:```
+
+
+
+```bash#### Docker:
+
+node seed.js```bash
+
+```docker run -d \
+
+  --name fastspot-mongo \
+
+This creates:  -p 27017:27017 \
+
+- **1 admin user**  -e MONGO_INITDB_ROOT_USERNAME=admin \
+
+  - Email: `admin@local`  -e MONGO_INITDB_ROOT_PASSWORD=password \
+
+  - Password: `Admin123!`  mongo:7
+
+- **4 categories** (Burgers, Drinks, Desserts, Snacks)```
+
+- **10 products** with customization options
+
+- **3 promotions**---
+
+- **8 mood quiz questions**
+
+- **Indexes** for better performance## ⚙️ Конфигурация
+
+
+
+## Database Structure### Переменные окружения
+
+
+
+See [schema.md](./schema.md) for detailed collection schemas.Создайте файл `.env` в корне проекта:
+
+
+
+### Main Collections```env
+
 # MongoDB Connection
-MONGODB_URI=mongodb://localhost:27017/fastspot
 
-# Для MongoDB Atlas (облачная версия)
-# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/fastspot?retryWrites=true&w=majority
+- **users** - Admin and guest accountsMONGODB_URI=mongodb://localhost:27017/fastspot
 
-# Для Docker с авторизацией
-# MONGODB_URI=mongodb://admin:password@localhost:27017/fastspot?authSource=admin
-```
+- **categories** - Menu categories
+
+- **products** - Menu items with options# Для MongoDB Atlas (облачная версия)
+
+- **promotions** - Special offers# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/fastspot?retryWrites=true&w=majority
+
+- **carts** - Shopping carts
+
+- **orders** - Completed orders# Для Docker с авторизацией
+
+- **mood_questions** - AI quiz questions# MONGODB_URI=mongodb://admin:password@localhost:27017/fastspot?authSource=admin
+
+- **mood_rules** - AI recommendation rules```
+
+- **ai_sessions** - AI recommendation history
 
 ### Настройка MongoDB Atlas (опционально)
 
+## Useful Commands
+
 Если вы хотите использовать облачную MongoDB:
 
+### Connect to MongoDB
+
 1. Зарегистрируйтесь на [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
-2. Создайте бесплатный кластер
-3. Настройте Network Access (добавьте свой IP или `0.0.0.0/0` для разработки)
-4. Создайте пользователя базы данных
+
+```bash2. Создайте бесплатный кластер
+
+# Local3. Настройте Network Access (добавьте свой IP или `0.0.0.0/0` для разработки)
+
+mongosh fastspot4. Создайте пользователя базы данных
+
 5. Получите строку подключения (Connection String)
-6. Вставьте её в `MONGODB_URI` в файле `.env`
 
----
+# With auth6. Вставьте её в `MONGODB_URI` в файле `.env`
 
-## 🌱 Заполнение данными
+mongosh -u admin -p Admin123! --authenticationDatabase admin fastspot
 
-### Запуск скрипта seed
+```---
 
-```bash
+
+
+### View Data## 🌱 Заполнение данными
+
+
+
+```javascript### Запуск скрипта seed
+
+// Show collections
+
+show collections```bash
+
 # Из корня проекта
-cd db
-node seed.js
+
+// View productscd db
+
+db.products.find().pretty()node seed.js
+
 ```
 
-Или с указанием MongoDB URI напрямую:
+// Active categories
 
-```bash
-MONGODB_URI=mongodb://localhost:27017/fastspot node seed.js
+db.categories.find({ isActive: true })Или с указанием MongoDB URI напрямую:
+
+
+
+// Find by tags```bash
+
+db.products.find({ tags: "vegetarian" })MONGODB_URI=mongodb://localhost:27017/fastspot node seed.js
+
+``````
+
+
+
+### Clear Database### Что создает скрипт?
+
+
+
+```javascriptСкрипт `seed.js` создает:
+
+// Clear all data
+
+db.users.deleteMany({})- ✅ **1 пользователь-администратор**
+
+db.categories.deleteMany({})  - Email: `admin@local`
+
+db.products.deleteMany({})  - Password: `Admin123!`
+
+db.orders.deleteMany({})  
+
+db.carts.deleteMany({})- ✅ **4 категории**: Бургеры, Напитки, Десерты, Снэки
+
 ```
-
-### Что создает скрипт?
-
-Скрипт `seed.js` создает:
-
-- ✅ **1 пользователь-администратор**
-  - Email: `admin@local`
-  - Password: `Admin123!`
-  
-- ✅ **4 категории**: Бургеры, Напитки, Десерты, Снэки
 
 - ✅ **11 продуктов** с:
-  - Настраиваемыми ингредиентами
+
+## MongoDB Compass  - Настраиваемыми ингредиентами
+
   - Дополнительными опциями (размер, соус и т.д.)
-  - Тегами для AI-рекомендаций
+
+For visual database management:  - Тегами для AI-рекомендаций
+
   - Ценами в USD
 
-- ✅ **3 акции** (промо)
+1. Download [MongoDB Compass](https://www.mongodb.com/products/compass)
+
+2. Connect using your `MONGODB_URI`- ✅ **3 акции** (промо)
+
+3. Browse and edit data visually
 
 - ✅ **8 вопросов** для mood quiz
 
+## Troubleshooting
+
 - ✅ **4 правила** для fallback рекомендаций
+
+### Can't connect?
 
 - ✅ **Индексы** для оптимизации запросов
 
----
+- Check MongoDB is running: `mongosh --eval "db.runCommand({ ping: 1 })"`
+
+- Verify `.env` file exists---
+
+- Check port 27017: `lsof -i :27017`
 
 ## 📚 Структура данных
 
+### Authentication errors?
+
 Подробное описание всех коллекций и их связей смотрите в [schema.md](./schema.md).
 
-### Основные коллекции:
+- Ensure MongoDB auth is set up correctly
+
+- Check username/password in `MONGODB_URI`### Основные коллекции:
+
+- Verify `authSource=admin` is included
 
 1. **users** - Пользователи (админы и гости)
-2. **categories** - Категории меню
+
+## More Info2. **categories** - Категории меню
+
 3. **products** - Продукты с ингредиентами и опциями
-4. **promotions** - Акции и спецпредложения
-5. **carts** - Корзины пользователей
-6. **orders** - Заказы с доставкой и оплатой
-7. **mood_questions** - Вопросы для mood quiz
+
+- [QUICKSTART.md](./QUICKSTART.md) - Quick setup guide4. **promotions** - Акции и спецпредложения
+
+- [schema.md](./schema.md) - Database schema details5. **carts** - Корзины пользователей
+
+- [QUERIES.md](./QUERIES.md) - Useful queries6. **orders** - Заказы с доставкой и оплатой
+
+- [DIAGRAM.md](./DIAGRAM.md) - Visual overview7. **mood_questions** - Вопросы для mood quiz
+
 8. **mood_rules** - Правила для AI-рекомендаций
 9. **ai_sessions** - История AI-рекомендаций
 

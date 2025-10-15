@@ -1,36 +1,69 @@
-# 📊 Диаграмма структуры базы данных FastSpot
+# 📊 Database Overview# 📊 Database Diagram
 
-## Общая схема связей
 
-```mermaid
+
+Quick visual guide to FastSpot's database structure.## How Collections Connect
+
+
+
+## Main Collections & Relationships```mermaid
+
 erDiagram
-    users ||--o{ carts : "has"
-    users ||--o{ orders : "places"
-    users ||--o{ ai_sessions : "creates"
-    
-    categories ||--o{ products : "contains"
-    
-    products }o--o{ promotions : "appliesTo"
-    products }o--o{ carts : "items"
+
+```mermaid    users ||--o{ carts : "has"
+
+erDiagram    users ||--o{ orders : "places"
+
+    users ||--o{ carts : "has"    users ||--o{ ai_sessions : "creates"
+
+    users ||--o{ orders : "places"    
+
+    categories ||--o{ products : "contains"    categories ||--o{ products : "contains"
+
+    products }o--o{ carts : "added_to"    
+
+    products }o--o{ orders : "part_of"    products }o--o{ promotions : "appliesTo"
+
+```    products }o--o{ carts : "items"
+
     products }o--o{ orders : "cartSnapshot"
-    products }o--o{ mood_rules : "recommendedProducts"
+
+## Collections    products }o--o{ mood_rules : "recommendedProducts"
+
     products }o--o{ ai_sessions : "recommends"
-    
-    mood_questions }o--o{ ai_sessions : "answers"
-    
-    users {
-        ObjectId _id PK
-        string role
-        string name
-        string email UK
+
+**users** → Admin & guest accounts      
+
+**categories** → Menu sections (Burgers, Drinks, etc.)      mood_questions }o--o{ ai_sessions : "answers"
+
+**products** → Menu items with options      
+
+**carts** → Active shopping carts      users {
+
+**orders** → Completed purchases          ObjectId _id PK
+
+**promotions** → Special deals          string role
+
+**mood_questions** → Quiz for AI recommendations          string name
+
+**ai_sessions** → AI recommendation history        string email UK
+
         string phone
-        string passwordHash
+
+## How It Works        string passwordHash
+
         date createdAt
-    }
-    
+
+### 🛒 Ordering Flow    }
+
+Browse Menu → Add to Cart → Checkout → Order Created    
+
     categories {
-        ObjectId _id PK
-        string name
+
+### 🤖 AI Recommendations        ObjectId _id PK
+
+Take Quiz → AI Analyzes Mood → Suggests Products → Add to Cart        string name
+
         string slug UK
         string image
         boolean isActive

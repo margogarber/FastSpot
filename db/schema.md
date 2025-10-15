@@ -1,275 +1,547 @@
-# MongoDB Schema для FastSpot
+# Database Schema# MongoDB Schema для FastSpot
 
-## Коллекции и их структура
 
-### 1. users
+
+MongoDB collections and structure for FastSpot.## Коллекции и их структура
+
+
+
+## Collections### 1. users
+
 Хранит информацию о пользователях системы (админы и гости).
 
-```javascript
-{
-  _id: ObjectId,
-  role: String,              // "admin" | "guest"
-  name: String,
-  email: String,             // уникальный
-  phone: String,
-  passwordHash: String,      // bcrypt hash
-  createdAt: Date
-}
-```
+### users
 
-**Индексы:**
+User accounts (admins and guests).```javascript
+
+{
+
+```javascript  _id: ObjectId,
+
+{  role: String,              // "admin" | "guest"
+
+  _id: ObjectId,  name: String,
+
+  role: String,              // "admin" or "guest"  email: String,             // уникальный
+
+  name: String,  phone: String,
+
+  email: String,             // unique  passwordHash: String,      // bcrypt hash
+
+  phone: String,  createdAt: Date
+
+  passwordHash: String,      // bcrypt hashed}
+
+  createdAt: Date```
+
+}
+
+```**Индексы:**
+
 - `email` (unique)
-- `role`
 
----
+**Indexes:** `email` (unique), `role`- `role`
 
-### 2. categories
-Категории меню (бургеры, напитки, десерты и т.д.).
 
-```javascript
-{
-  _id: ObjectId,
-  name: String,              // "Бургеры", "Напитки"
-  slug: String,              // "burgers", "drinks"
-  image: String,             // URL изображения
-  isActive: Boolean          // доступна ли категория
-}
-```
 
-**Индексы:**
+------
+
+
+
+### categories### 2. categories
+
+Menu categories.Категории меню (бургеры, напитки, десерты и т.д.).
+
+
+
+```javascript```javascript
+
+{{
+
+  _id: ObjectId,  _id: ObjectId,
+
+  name: String,              // "Burgers", "Drinks"  name: String,              // "Бургеры", "Напитки"
+
+  slug: String,              // "burgers", "drinks"    slug: String,              // "burgers", "drinks"
+
+  image: String,             // image URL  image: String,             // URL изображения
+
+  isActive: Boolean  isActive: Boolean          // доступна ли категория
+
+}}
+
+``````
+
+
+
+**Indexes:** `slug` (unique), `isActive`**Индексы:**
+
 - `slug` (unique)
-- `isActive`
 
----
+---- `isActive`
+
+
+
+### products---
+
+Menu items with customization options.
 
 ### 3. products
-Товары меню с ингредиентами, опциями и тегами.
 
-```javascript
+```javascriptТовары меню с ингредиентами, опциями и тегами.
+
 {
-  _id: ObjectId,
-  categoryId: ObjectId,      // ссылка на categories._id
-  name: String,              // "Биг Мак", "Кока-Кола"
-  slug: String,              // "big-mac", "coca-cola"
-  description: String,
-  priceUSD: Number,          // цена в долларах (например, 5.99)
-  image: String,             // URL изображения
-  isActive: Boolean,
-  ingredients: [             // настраиваемые ингредиенты
-    {
-      key: String,           // "pickles", "onions"
-      label: String,         // "Маринованные огурцы"
-      defaultIncluded: Boolean
-    }
-  ],
-  options: [                 // дополнительные опции
-    {
-      key: String,           // "size", "sauce"
-      label: String,         // "Размер", "Соус"
-      type: String,          // "single" | "multiple"
-      choices: [
-        {
-          value: String,     // "large", "medium"
-          label: String,     // "Большой", "Средний"
-          extraPriceUSD: Number // доплата в USD (0 если нет)
-        }
-      ]
-    }
-  ],
-  tags: [String]             // ["spicy", "vegetarian", "comfort-food"]
-}
+
+  _id: ObjectId,```javascript
+
+  categoryId: ObjectId,      // → categories._id{
+
+  name: String,              // "Big Mac", "Coca-Cola"  _id: ObjectId,
+
+  slug: String,              // "big-mac", "coca-cola"  categoryId: ObjectId,      // ссылка на categories._id
+
+  description: String,  name: String,              // "Биг Мак", "Кока-Кола"
+
+  priceUSD: Number,          // base price  slug: String,              // "big-mac", "coca-cola"
+
+  image: String,  description: String,
+
+  isActive: Boolean,  priceUSD: Number,          // цена в долларах (например, 5.99)
+
+    image: String,             // URL изображения
+
+  ingredients: [             // customizable ingredients  isActive: Boolean,
+
+    {  ingredients: [             // настраиваемые ингредиенты
+
+      key: String,           // "pickles", "onions"    {
+
+      label: String,         // "Pickles"      key: String,           // "pickles", "onions"
+
+      defaultIncluded: Boolean      label: String,         // "Маринованные огурцы"
+
+    }      defaultIncluded: Boolean
+
+  ],    }
+
+    ],
+
+  options: [                 // extra options  options: [                 // дополнительные опции
+
+    {    {
+
+      key: String,           // "size", "sauce"      key: String,           // "size", "sauce"
+
+      label: String,         // "Size", "Sauce"      label: String,         // "Размер", "Соус"
+
+      type: String,          // "single" or "multiple"      type: String,          // "single" | "multiple"
+
+      choices: [      choices: [
+
+        {        {
+
+          value: String,     // "large", "medium"          value: String,     // "large", "medium"
+
+          label: String,     // "Large", "Medium"          label: String,     // "Большой", "Средний"
+
+          extraPriceUSD: Number          extraPriceUSD: Number // доплата в USD (0 если нет)
+
+        }        }
+
+      ]      ]
+
+    }    }
+
+  ],  ],
+
+    tags: [String]             // ["spicy", "vegetarian", "comfort-food"]
+
+  tags: [String]             // ["spicy", "vegetarian"]}
+
+}```
+
 ```
 
 **Индексы:**
-- `categoryId`
+
+**Indexes:** `categoryId`, `slug` (unique), `isActive`, `tags`- `categoryId`
+
 - `slug` (unique)
-- `isActive`
+
+---- `isActive`
+
 - `tags`
 
----
+### promotions
 
-### 4. promotions
-Акции и специальные предложения.
+Special offers and deals.---
 
-```javascript
-{
+
+
+```javascript### 4. promotions
+
+{Акции и специальные предложения.
+
   _id: ObjectId,
-  title: String,             // "Летняя распродажа!"
-  description: String,
-  startsAt: Date,
-  endsAt: Date,
-  bannerImage: String,       // URL баннера
-  isActive: Boolean,
+
+  title: String,             // "Summer Sale!"```javascript
+
+  description: String,{
+
+  startsAt: Date,  _id: ObjectId,
+
+  endsAt: Date,  title: String,             // "Летняя распродажа!"
+
+  bannerImage: String,  description: String,
+
+  isActive: Boolean,  startsAt: Date,
+
+  appliesTo: [ObjectId]      // product IDs  endsAt: Date,
+
+}  bannerImage: String,       // URL баннера
+
+```  isActive: Boolean,
+
   appliesTo: [ObjectId]      // массив productId, на которые действует акция
-}
-```
 
-**Индексы:**
-- `isActive`
-- `startsAt`, `endsAt`
+**Indexes:** `isActive`, `startsAt`, `endsAt`}
+
+```
 
 ---
 
-### 5. carts
-Корзины пользователей (как авторизованных, так и гостей).
+**Индексы:**
 
-```javascript
+### carts- `isActive`
+
+Shopping carts (users and guests).- `startsAt`, `endsAt`
+
+
+
+```javascript---
+
 {
-  _id: ObjectId,
-  userId: ObjectId | null,   // null для гостей
-  sessionId: String,         // для гостей - ID сессии
-  items: [
-    {
-      productId: ObjectId,
-      qty: Number,
-      chosenIngredients: [String],  // ["pickles", "onions"]
-      chosenOptions: {              // {"size": "large", "sauce": "bbq"}
-        [key: String]: String | [String]
-      },
-      unitPriceUSD: Number,   // цена за единицу с учетом опций
-      totalUSD: Number        // unitPriceUSD * qty
-    }
-  ],
-  totalUSD: Number,           // сумма всех items[].totalUSD
-  currency: String,           // "USD"
+
+  _id: ObjectId,### 5. carts
+
+  userId: ObjectId | null,   // null for guestsКорзины пользователей (как авторизованных, так и гостей).
+
+  sessionId: String,         // for guest sessions
+
+  ```javascript
+
+  items: [{
+
+    {  _id: ObjectId,
+
+      productId: ObjectId,  userId: ObjectId | null,   // null для гостей
+
+      qty: Number,  sessionId: String,         // для гостей - ID сессии
+
+      chosenIngredients: [String],        // ["pickles", "onions"]  items: [
+
+      chosenOptions: {                    // {"size": "large"}    {
+
+        [key: String]: String | [String]      productId: ObjectId,
+
+      },      qty: Number,
+
+      unitPriceUSD: Number,      chosenIngredients: [String],  // ["pickles", "onions"]
+
+      totalUSD: Number         // unitPrice * qty      chosenOptions: {              // {"size": "large", "sauce": "bbq"}
+
+    }        [key: String]: String | [String]
+
+  ],      },
+
+        unitPriceUSD: Number,   // цена за единицу с учетом опций
+
+  totalUSD: Number,            // sum of all items      totalUSD: Number        // unitPriceUSD * qty
+
+  currency: String,            // "USD"    }
+
+  updatedAt: Date  ],
+
+}  totalUSD: Number,           // сумма всех items[].totalUSD
+
+```  currency: String,           // "USD"
+
   updatedAt: Date
-}
-```
 
-**Индексы:**
-- `userId`
-- `sessionId`
+**Indexes:** `userId`, `sessionId`}
+
+```
 
 ---
 
-### 6. orders
-Завершенные заказы с полной информацией о доставке и оплате.
+**Индексы:**
 
-```javascript
+### orders- `userId`
+
+Completed orders.- `sessionId`
+
+
+
+```javascript---
+
 {
+
+  _id: ObjectId,### 6. orders
+
+  userId: ObjectId | null,Завершенные заказы с полной информацией о доставке и оплате.
+
+  
+
+  cartSnapshot: {              // copy of cart at checkout```javascript
+
+    items: [/* same as cart */],{
+
+    totalUSD: Number  _id: ObjectId,
+
+  },  userId: ObjectId | null,   // null для гостей
+
+    cartSnapshot: {            // копия корзины на момент заказа
+
+  status: String,              // "pending" | "preparing" | "ready" | "delivering" | "completed" | "cancelled"    items: [/* структура как в carts.items */],
+
+      totalUSD: Number
+
+  payment: {  },
+
+    method: String,            // "card" | "applepay" | "cash"  status: String,            // "pending" | "preparing" | "ready" | "delivering" | "completed" | "cancelled"
+
+    status: String             // "pending" | "paid" | "failed"  payment: {
+
+  },    method: String,          // "card" | "applepay" | "googlepay" | "cash"
+
+      status: String           // "pending" | "paid" | "failed"
+
+  delivery: {  },
+
+    type: String,              // "pickup" | "courier"  delivery: {
+
+    address: String,    type: String,            // "pickup" | "courier"
+
+    eta: Date,    address: String,         // адрес (если courier)
+
+    tracking: [    eta: Date,               // ожидаемое время
+
+      {    tracking: [              // история статусов
+
+        ts: Date,      {
+
+        status: String,        ts: Date,
+
+        note: String        status: String,
+
+      }        note: String
+
+    ]      }
+
+  },    ]
+
+    },
+
+  totalUSD: Number,  totalUSD: Number,
+
+  createdAt: Date  createdAt: Date
+
+}}
+
+``````
+
+
+
+**Indexes:** `userId`, `status`, `createdAt`**Индексы:**
+
+- `userId`
+
+---- `status`
+
+- `createdAt`
+
+### mood_questions
+
+Quiz questions for AI recommendations.---
+
+
+
+```javascript### 7. mood_questions
+
+{Вопросы для "mood quiz" (тест настроения для AI-рекомендаций).
+
   _id: ObjectId,
-  userId: ObjectId | null,   // null для гостей
-  cartSnapshot: {            // копия корзины на момент заказа
-    items: [/* структура как в carts.items */],
-    totalUSD: Number
-  },
-  status: String,            // "pending" | "preparing" | "ready" | "delivering" | "completed" | "cancelled"
-  payment: {
-    method: String,          // "card" | "applepay" | "googlepay" | "cash"
-    status: String           // "pending" | "paid" | "failed"
-  },
-  delivery: {
-    type: String,            // "pickup" | "courier"
-    address: String,         // адрес (если courier)
-    eta: Date,               // ожидаемое время
-    tracking: [              // история статусов
-      {
-        ts: Date,
-        status: String,
-        note: String
+
+  order: Number,               // question order```javascript
+
+  question: String,            // "How are you feeling?"{
+
+  type: String,                // "single" | "multiple" | "scale"  _id: ObjectId,
+
+    order: Number,             // порядок вопроса
+
+  options: [  question: String,          // "Как вы себя чувствуете сегодня?"
+
+    {  type: String,              // "single" | "multiple" | "scale"
+
+      value: String,           // "happy", "tired"  options: [
+
+      label: String,           // "Happy 😊"    {
+
+      weight: Object           // {"energy": 1, "comfort": 0.5}      value: String,         // "happy", "tired", "hungry"
+
+    }      label: String,         // "Счастлив 😊"
+
+  ],      weight: Object         // {"energy": 1, "comfort": 0.5}
+
       }
-    ]
-  },
-  totalUSD: Number,
-  createdAt: Date
-}
+
+  isActive: Boolean  ],
+
+}  isActive: Boolean
+
+```}
+
 ```
 
-**Индексы:**
-- `userId`
-- `status`
-- `createdAt`
-
----
-
-### 7. mood_questions
-Вопросы для "mood quiz" (тест настроения для AI-рекомендаций).
-
-```javascript
-{
-  _id: ObjectId,
-  order: Number,             // порядок вопроса
-  question: String,          // "Как вы себя чувствуете сегодня?"
-  type: String,              // "single" | "multiple" | "scale"
-  options: [
-    {
-      value: String,         // "happy", "tired", "hungry"
-      label: String,         // "Счастлив 😊"
-      weight: Object         // {"energy": 1, "comfort": 0.5}
-    }
-  ],
-  isActive: Boolean
-}
-```
+**Indexes:** `order`, `isActive`
 
 **Индексы:**
-- `order`
+
+---- `order`
+
 - `isActive`
 
----
+### mood_rules
 
-### 8. mood_rules
-Правила для fallback рекомендаций (если AI недоступен).
+Fallback rules when AI is unavailable.---
 
-```javascript
-{
+
+
+```javascript### 8. mood_rules
+
+{Правила для fallback рекомендаций (если AI недоступен).
+
   _id: ObjectId,
-  name: String,              // "Comfort Food Lover"
-  conditions: {              // условия для срабатывания правила
-    tags: [String],          // требуемые теги в ответах
-    minScore: Object         // {"comfort": 3, "energy": 1}
-  },
-  recommendedProducts: [ObjectId], // массив productId
-  priority: Number,          // приоритет правила (больше = выше)
-  isActive: Boolean
-}
+
+  name: String,                // "Energy Boost"```javascript
+
+  {
+
+  conditions: {                // matching conditions  _id: ObjectId,
+
+    energy: { $gt: 0.5 },  name: String,              // "Comfort Food Lover"
+
+    comfort: { $lt: 0.3 }  conditions: {              // условия для срабатывания правила
+
+  },    tags: [String],          // требуемые теги в ответах
+
+      minScore: Object         // {"comfort": 3, "energy": 1}
+
+  recommendedProducts: [ObjectId],  },
+
+  priority: Number,  recommendedProducts: [ObjectId], // массив productId
+
+  isActive: Boolean  priority: Number,          // приоритет правила (больше = выше)
+
+}  isActive: Boolean
+
+```}
+
 ```
 
+**Indexes:** `priority`, `isActive`
+
 **Индексы:**
-- `priority`
+
+---- `priority`
+
 - `isActive`
 
----
+### ai_sessions
 
-### 9. ai_sessions
-История сессий AI-рекомендаций для аналитики.
+AI recommendation history.---
 
-```javascript
-{
+
+
+```javascript### 9. ai_sessions
+
+{История сессий AI-рекомендаций для аналитики.
+
   _id: ObjectId,
-  userId: ObjectId | null,
-  sessionId: String,
-  answers: [                 // ответы пользователя на quiz
-    {
-      questionId: ObjectId,
-      selectedOptions: [String]
-    }
-  ],
-  aiResponse: {              // ответ от Gemini API
-    raw: String,             // сырой текст ответа
-    recommendedProducts: [ObjectId],
-    reasoning: String        // объяснение рекомендации
-  },
-  fallbackUsed: Boolean,     // использовались ли правила вместо AI
-  createdAt: Date
-}
-```
 
-**Индексы:**
+  userId: ObjectId | null,```javascript
+
+  sessionId: String,{
+
+    _id: ObjectId,
+
+  answers: [                   // user's quiz answers  userId: ObjectId | null,
+
+    {  sessionId: String,
+
+      questionId: ObjectId,  answers: [                 // ответы пользователя на quiz
+
+      value: String | [String]    {
+
+    }      questionId: ObjectId,
+
+  ],      selectedOptions: [String]
+
+      }
+
+  aiResponse: {                // AI recommendation  ],
+
+    model: String,             // "gemini-2.0-flash-thinking-exp"  aiResponse: {              // ответ от Gemini API
+
+    products: [ObjectId],    raw: String,             // сырой текст ответа
+
+    reasoning: String    recommendedProducts: [ObjectId],
+
+  },    reasoning: String        // объяснение рекомендации
+
+    },
+
+  fallbackUsed: Boolean,       // true if AI failed  fallbackUsed: Boolean,     // использовались ли правила вместо AI
+
+  createdAt: Date  createdAt: Date
+
+}}
+
+``````
+
+
+
+**Indexes:** `userId`, `sessionId`, `createdAt`**Индексы:**
+
 - `userId`
-- `sessionId`
+
+---- `sessionId`
+
 - `createdAt`
 
+## Relationships
+
 ---
 
-## Связи между коллекциями
+- `products.categoryId` → `categories._id`
 
-```
-users (1) ──────────> (n) carts
-users (1) ──────────> (n) orders
-users (1) ──────────> (n) ai_sessions
+- `carts.userId` → `users._id`## Связи между коллекциями
 
-categories (1) ─────> (n) products
+- `carts.items[].productId` → `products._id`
+
+- `orders.userId` → `users._id````
+
+- `orders.cartSnapshot.items[].productId` → `products._id`users (1) ──────────> (n) carts
+
+- `promotions.appliesTo[]` → `products._id`users (1) ──────────> (n) orders
+
+- `mood_rules.recommendedProducts[]` → `products._id`users (1) ──────────> (n) ai_sessions
+
+- `ai_sessions.answers[].questionId` → `mood_questions._id`
+
+- `ai_sessions.aiResponse.products[]` → `products._id`categories (1) ─────> (n) products
+
 
 products (n) ──────> (n) promotions.appliesTo
 products (n) ──────> (n) carts.items[].productId
