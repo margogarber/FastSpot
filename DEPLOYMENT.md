@@ -1,185 +1,171 @@
 # FastSpot Deployment Guide
 
-## Deploy to Railway (Recommended)
+## Frontend Deployment - GitHub Pages
 
-Railway is a platform that makes it easy to deploy full-stack applications with databases.
+The FastSpot frontend is automatically deployed to GitHub Pages via GitHub Actions.
+
+### Live URL
+
+Your frontend is available at:
+```
+https://margogarber.github.io/FastSpot/
+```
+
+### How It Works
+
+1. **Automatic Deployment**: Every push to the `main` branch triggers a GitHub Actions workflow
+2. **Build Process**: The workflow builds the Vue.js frontend using Vite
+3. **Deployment**: The built files are deployed to GitHub Pages
+
+### Configuration
+
+The deployment is configured via:
+- `.github/workflows/deploy.yml` - GitHub Actions workflow
+- `frontend/vite.config.js` - Base path set to `/FastSpot/`
+
+### Viewing Deployment Status
+
+1. Go to your GitHub repository: `https://github.com/margogarber/FastSpot`
+2. Click the **"Actions"** tab
+3. View the latest workflow run
+
+### Enabling GitHub Pages (First Time Setup)
+
+If GitHub Pages isn't enabled yet:
+
+1. Go to your repository on GitHub
+2. Click **Settings** → **Pages** (left sidebar)
+3. Under **Source**, select **GitHub Actions**
+4. Save and wait for deployment to complete
+
+---
+
+## Backend Deployment (Local Development)
+
+The backend API runs locally for development. To deploy the backend to production, consider:
+
+### Deployment Options for Backend:
+
+1. **Railway** - `https://railway.app` (requires payment method, $5/month with $5 free credit)
+2. **Render** - `https://render.com` (free tier available)
+3. **Fly.io** - `https://fly.io` (free tier available)
+4. **DigitalOcean App Platform** - `https://www.digitalocean.com/products/app-platform`
+5. **Heroku** - `https://heroku.com` (paid plans only)
+
+### Connecting Frontend to Production Backend
+
+Once you deploy your backend, update the frontend API URL:
+
+1. Create `frontend/.env.production`:
+   ```bash
+   VITE_API_URL=https://your-backend-url.com/api/v1
+   ```
+
+2. Push changes to trigger a new deployment
+
+---
+
+## Local Development
 
 ### Prerequisites
 
-1. A Railway account (sign up at [railway.app](https://railway.app))
-2. GitHub account with FastSpot repository
+- Go 1.22+
+- Node.js 20+
+- MongoDB
 
-### Step-by-Step Deployment
-
-#### 1. Create a New Project on Railway
-
-1. Go to [railway.app](https://railway.app) and sign in
-2. Click **"New Project"**
-3. Select **"Deploy from GitHub repo"**
-4. Choose your **FastSpot** repository
-5. Railway will automatically detect your configuration
-
-#### 2. Add MongoDB Database
-
-1. In your Railway project, click **"+ New"**
-2. Select **"Database"**
-3. Choose **"MongoDB"**
-4. Railway will automatically create a MongoDB instance and set the `MONGODB_URI` environment variable
-
-#### 3. Configure Environment Variables
-
-Click on your FastSpot service, then go to **"Variables"** tab and add:
+### Start MongoDB
 
 ```bash
-# Required Variables
-PORT=3000
-GIN_MODE=release
-JWT_SECRET=your-super-secret-jwt-key-generate-a-strong-one
-JWT_EXPIRATION=24h
-GEMINI_API_KEY=your-gemini-api-key-here
-PAYMENTS_PROVIDER=stub
-
-# MONGODB_URI is automatically set by Railway when you add MongoDB
-# ALLOWED_ORIGINS will be set after first deployment
+docker-compose up -d mongodb
 ```
 
-**Important:** Generate a strong JWT_SECRET. You can use:
+### Start Backend
+
 ```bash
-openssl rand -base64 32
+cd backend
+cp .env.example .env
+# Edit .env with your configuration
+go run cmd/api/main.go
 ```
 
-#### 4. Update CORS After First Deploy
+Backend will run on: `http://localhost:3000`
 
-After your first deployment:
+### Start Frontend
 
-1. Copy your Railway deployment URL (e.g., `https://fastspot-production.up.railway.app`)
-2. Go back to **Variables** and update:
-   ```bash
-   ALLOWED_ORIGINS=https://fastspot-production.up.railway.app
-   ```
-3. Railway will automatically redeploy
-
-#### 5. Access Your Application
-
-Your FastSpot application will be available at:
-```
-https://your-project-name.up.railway.app
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
-### What Gets Deployed
-
-- ✅ **Backend API** (Go server)
-- ✅ **Frontend** (Vue.js SPA)
-- ✅ **Database** (MongoDB)
-
-Railway will:
-1. Build your Go backend
-2. Build your Vue.js frontend
-3. Serve the frontend through the Go server
-4. Connect to MongoDB automatically
-
-### Monitoring
-
-- View logs in Railway dashboard
-- Monitor resource usage
-- Set up custom domains (optional)
+Frontend will run on: `http://localhost:5173`
 
 ---
 
-## Alternative: Deploy Backend and Frontend Separately
-
-### Backend Deployment Options
-
-1. **Railway** (recommended)
-2. **Render** - `https://render.com`
-3. **Fly.io** - `https://fly.io`
-4. **DigitalOcean App Platform** - `https://www.digitalocean.com/products/app-platform`
-
-### Frontend Deployment Options
-
-1. **Vercel** - `https://vercel.com`
-2. **Netlify** - `https://netlify.com`
-3. **GitHub Pages** (already configured)
-
-If deploying separately, update `VITE_API_URL` in frontend to point to your backend URL.
-
----
-
-## Environment Variables Reference
+## Environment Variables
 
 ### Backend (.env)
 
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `PORT` | Server port | `3000` |
-| `GIN_MODE` | Gin framework mode | `release` |
-| `MONGODB_URI` | MongoDB connection string | Auto-set by Railway |
+| `GIN_MODE` | Gin framework mode | `debug` or `release` |
+| `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/fastspot` |
 | `JWT_SECRET` | Secret key for JWT tokens | Generate with `openssl rand -base64 32` |
 | `JWT_EXPIRATION` | JWT token expiration | `24h` |
-| `GEMINI_API_KEY` | Google Gemini AI API key | Get from Google AI Studio |
+| `GEMINI_API_KEY` | Google Gemini AI API key | Get from [Google AI Studio](https://aistudio.google.com/app/apikey) |
 | `PAYMENTS_PROVIDER` | Payment provider | `stub` (for testing) |
-| `ALLOWED_ORIGINS` | CORS allowed origins | Your deployment URL |
+| `ALLOWED_ORIGINS` | CORS allowed origins | `http://localhost:5173,http://localhost:3000` |
 
-### Frontend (.env.production)
+### Frontend (.env)
 
-| Variable | Description | Value |
-|----------|-------------|-------|
-| `VITE_API_URL` | Backend API URL | `/api/v1` (same domain) |
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `VITE_API_URL` | Backend API URL | `http://localhost:3000/api/v1` |
 
 ---
 
 ## Troubleshooting
 
-### Build Fails
+### Frontend Not Loading on GitHub Pages
 
-- Check Railway logs for specific errors
-- Ensure all dependencies are in `go.mod` and `package.json`
-- Verify environment variables are set correctly
+1. Check the **Actions** tab for deployment errors
+2. Verify GitHub Pages is enabled in repository settings
+3. Ensure the workflow completed successfully
+4. Clear browser cache and try again
 
-### Database Connection Issues
+### API Errors in Frontend
 
-- Ensure MongoDB service is running in Railway
-- Check `MONGODB_URI` is set correctly
-- Verify network connectivity between services
+- The frontend on GitHub Pages will try to connect to `localhost:3000` by default
+- You need to deploy the backend separately and update `VITE_API_URL`
+- Or run the backend locally while testing the GitHub Pages frontend
 
 ### CORS Errors
 
-- Update `ALLOWED_ORIGINS` to include your deployment URL
-- Ensure the URL includes the protocol (`https://`)
-- No trailing slash in the origin URL
-
-### Frontend Not Loading
-
-- Check that `npm run build` completes successfully
-- Verify static files are in `frontend/dist`
-- Check browser console for errors
+- Update `ALLOWED_ORIGINS` in backend `.env` to include your GitHub Pages URL:
+  ```bash
+  ALLOWED_ORIGINS=https://margogarber.github.io
+  ```
 
 ---
 
-## Local Development
+## Project Structure
 
-To run locally:
-
-1. **Start MongoDB:**
-   ```bash
-   docker-compose up -d mongodb
-   ```
-
-2. **Start Backend:**
-   ```bash
-   cd backend
-   go run cmd/api/main.go
-   ```
-
-3. **Start Frontend:**
-   ```bash
-   cd frontend
-   npm run dev
-   ```
+```
+FastSpot/
+├── backend/          # Go API server
+├── frontend/         # Vue.js application
+├── db/              # Database schema and seeds
+└── .github/         # GitHub Actions workflows
+    └── workflows/
+        └── deploy.yml  # Frontend deployment workflow
+```
 
 ---
 
 ## Need Help?
 
-- Railway Documentation: `https://docs.railway.app`
-- FastSpot Issues: Create an issue on GitHub
+- **GitHub Pages Docs**: https://docs.github.com/en/pages
+- **Vite Deployment**: https://vitejs.dev/guide/static-deploy.html
+- **FastSpot Issues**: Create an issue on GitHub
+
