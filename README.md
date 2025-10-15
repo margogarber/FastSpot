@@ -63,7 +63,9 @@ Frontend runs on `http://localhost:5173`
 # Kill backend (from project root)
 lsof -ti:3000 | xargs kill -9
 
-# Kill frontend (Ctrl+C in terminal)
+# Kill frontend (Ctrl+C in terminal) 
+||
+lsof -ti:5173 | xargs kill -9
 ```
 
 ## Environment
