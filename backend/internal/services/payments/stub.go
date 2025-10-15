@@ -44,7 +44,7 @@ func (p *StubProvider) ProcessPayment(amount float64, method string) (*PaymentRe
 		message = "Payment is being processed"
 	}
 
-	// Simulate failure for amounts ending in .13 (unlucky number)
+	// Simulate failure for amounts ending in .13 (unlucky number:D)
 	if int(amount*100)%100 == 13 {
 		status = "failed"
 		message = "Payment declined"

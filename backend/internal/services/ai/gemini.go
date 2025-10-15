@@ -173,10 +173,7 @@ func (s *GeminiService) buildPrompt(answers []MoodAnswer, questions []map[string
 }
 
 func (s *GeminiService) parseAIResponse(text string) (*RecommendationResponse, error) {
-	// Try to extract JSON from response
-	// Gemini sometimes adds markdown formatting, so we need to clean it
-
-	// Remove markdown code blocks if present
+	// Clean up response text
 	text = strings.TrimSpace(text)
 	text = strings.TrimPrefix(text, "```json")
 	text = strings.TrimPrefix(text, "```")
