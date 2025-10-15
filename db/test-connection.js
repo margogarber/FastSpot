@@ -1,5 +1,5 @@
 /**
- * Тестовый скрипт для проверки подключения к MongoDB
+ * Test for MongoDB connection
  */
 
 // Load environment variables

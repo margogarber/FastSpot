@@ -1,7 +1,6 @@
 /**
  * FastSpot - MongoDB Seed Script
- * Populates database with demo data for development and testing
- */
+ **/
 
 // Load environment variables
 require('dotenv').config();

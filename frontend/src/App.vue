@@ -32,7 +32,6 @@ const layout = computed(() => {
 })
 
 onMounted(async () => {
-  // Инициализируем auth при старте приложения
   await authStore.init()
 })
 </script>
